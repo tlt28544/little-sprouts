@@ -486,6 +486,14 @@ body {
   font-size: 48px;
   letter-spacing: 6px;
   line-height: 1.6;
+  max-width: 100%;
+  overflow: hidden;
+}
+.story-illustration svg {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 0 auto;
 }
 .story-text {
   font-size: 18px;
