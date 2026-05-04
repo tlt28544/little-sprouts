@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Little Sprouts 小苗苗 | Early Learning</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div id="app">
+    <!-- Splash -->
+    <div id="splash-screen" class="screen active">
+      <div class="splash-content">
+        <div class="splash-icon">🌱</div>
+        <h1 class="splash-title">Little Sprouts</h1>
+        <h2 class="splash-subtitle">小苗苗</h2>
+        <button class="btn-start" onclick="app.enter()">🎈 <span data-i18n="start">开始学习</span></button>
+      </div>
+    </div>
+
+    <!-- Home -->
+    <div id="home-screen" class="screen">
+      <div class="top-bar">
+        <button class="lang-toggle" onclick="app.toggleLang()">
+          <span id="lang-label">EN</span>
+        </button>
+      </div>
+      <div class="home-greeting">
+        <div class="greeting-icon">👋</div>
+        <h2 data-i18n="greeting">你好！今天学什么？</h2>
+      </div>
+      <div class="module-grid">
+        <button class="module-card" onclick="app.go('flashcards')">
+          <span class="module-icon">🔤</span>
+          <span class="module-name" data-i18n="mod_flashcards">识字卡片</span>
+        </button>
+        <button class="module-card" onclick="app.go('numbers')">
+          <span class="module-icon">🔢</span>
+          <span class="module-name" data-i18n="mod_numbers">数字乐园</span>
+        </button>
+        <button class="module-card" onclick="app.go('colors')">
+          <span class="module-icon">🎨</span>
+          <span class="module-name" data-i18n="mod_colors">颜色世界</span>
+        </button>
+        <button class="module-card" onclick="app.go('animals')">
+          <span class="module-icon">🐾</span>
+          <span class="module-name" data-i18n="mod_animals">动物王国</span>
+        </button>
+        <button class="module-card" onclick="app.go('shapes')">
+          <span class="module-icon">🔷</span>
+          <span class="module-name" data-i18n="mod_shapes">形状认知</span>
+        </button>
+        <button class="module-card" onclick="app.go('quiz')">
+          <span class="module-icon">⭐</span>
+          <span class="module-name" data-i18n="mod_quiz">趣味问答</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Flashcards -->
+    <div id="flashcards-screen" class="screen">
+      <div class="top-bar">
+        <button class="btn-back" onclick="app.go('home')">←</button>
+        <span class="screen-title" data-i18n="mod_flashcards">识字卡片</span>
+        <button class="lang-toggle" onclick="app.toggleLang()"><span id="lang-label-fc">EN</span></button>
+      </div>
+      <div class="flashcard-container">
+        <div class="flashcard" id="flashcard" onclick="app.flipCard()">
+          <div class="flashcard-front">
+            <div class="flashcard-emoji" id="fc-emoji"></div>
+            <div class="flashcard-word" id="fc-word"></div>
+            <div class="flashcard-hint" data-i18n="tap_flip">点击翻转</div>
+          </div>
+          <div class="flashcard-back">
+            <div class="flashcard-emoji" id="fc-emoji-back"></div>
+            <div class="flashcard-word" id="fc-word-back"></div>
+            <div class="flashcard-phonetic" id="fc-phonetic"></div>
+          </div>
+        </div>
+      </div>
+      <div class="flashcard-nav">
+        <button class="btn-nav" onclick="app.prevCard()">◀</button>
+        <span id="fc-progress">1 / 10</span>
+        <button class="btn-nav" onclick="app.nextCard()">▶</button>
+      </div>
+      <div class="category-tabs">
+        <button class="cat-tab active" onclick="app.setCategory('fruits', this)" data-i18n="cat_fruits">水果</button>
+        <button class="cat-tab" onclick="app.setCategory('body', this)" data-i18n="cat_body">身体</button>
+        <button class="cat-tab" onclick="app.setCategory('family', this)" data-i18n="cat_family">家庭</button>
+        <button class="cat-tab" onclick="app.setCategory('nature', this)" data-i18n="cat_nature">自然</button>
+        <button class="cat-tab" onclick="app.setCategory('food', this)" data-i18n="cat_food">食物</button>
+      </div>
+    </div>
+
+    <!-- Numbers -->
+    <div id="numbers-screen" class="screen">
+      <div class="top-bar">
+        <button class="btn-back" onclick="app.go('home')">←</button>
+        <span class="screen-title" data-i18n="mod_numbers">数字乐园</span>
+        <button class="lang-toggle" onclick="app.toggleLang()"><span id="lang-label-num">EN</span></button>
+      </div>
+      <div class="number-display">
+        <div class="big-number" id="big-number">1</div>
+        <div class="number-word" id="number-word">一 / One</div>
+        <div class="number-dots" id="number-dots"></div>
+      </div>
+      <div class="number-pad">
+        <button class="num-btn" onclick="app.showNumber(1)">1</button>
+        <button class="num-btn" onclick="app.showNumber(2)">2</button>
+        <button class="num-btn" onclick="app.showNumber(3)">3</button>
+        <button class="num-btn" onclick="app.showNumber(4)">4</button>
+        <button class="num-btn" onclick="app.showNumber(5)">5</button>
+        <button class="num-btn" onclick="app.showNumber(6)">6</button>
+        <button class="num-btn" onclick="app.showNumber(7)">7</button>
+        <button class="num-btn" onclick="app.showNumber(8)">8</button>
+        <button class="num-btn" onclick="app.showNumber(9)">9</button>
+        <button class="num-btn" onclick="app.showNumber(10)">10</button>
+      </div>
+      <div class="counting-game">
+        <button class="btn-game" onclick="app.startCounting()"><span data-i18n="counting_game">开始数数游戏</span> 🎲</button>
+      </div>
+    </div>
+
+    <!-- Colors -->
+    <div id="colors-screen" class="screen">
+      <div class="top-bar">
+        <button class="btn-back" onclick="app.go('home')">←</button>
+        <span class="screen-title" data-i18n="mod_colors">颜色世界</span>
+        <button class="lang-toggle" onclick="app.toggleLang()"><span id="lang-label-clr">EN</span></button>
+      </div>
+      <div class="color-display">
+        <div class="big-color-circle" id="color-circle"></div>
+        <div class="color-name" id="color-name">红色 / Red</div>
+      </div>
+      <div class="color-grid" id="color-grid"></div>
+      <div class="color-game-area">
+        <button class="btn-game" onclick="app.startColorQuiz()"><span data-i18n="color_game">颜色问答</span> 🎨</button>
+      </div>
+    </div>
+
+    <!-- Animals -->
+    <div id="animals-screen" class="screen">
+      <div class="top-bar">
+        <button class="btn-back" onclick="app.go('home')">←</button>
+        <span class="screen-title" data-i18n="mod_animals">动物王国</span>
+        <button class="lang-toggle" onclick="app.toggleLang()"><span id="lang-label-ani">EN</span></button>
+      </div>
+      <div class="animal-grid" id="animal-grid"></div>
+      <div id="animal-detail" class="animal-detail hidden">
+        <div class="animal-big-emoji" id="animal-big-emoji"></div>
+        <div class="animal-name" id="animal-detail-name"></div>
+        <div class="animal-sound" id="animal-sound"></div>
+        <button class="btn-game" onclick="app.hideAnimalDetail()" data-i18n="back">返回</button>
+      </div>
+    </div>
+
+    <!-- Shapes -->
+    <div id="shapes-screen" class="screen">
+      <div class="top-bar">
+        <button class="btn-back" onclick="app.go('home')">←</button>
+        <span class="screen-title" data-i18n="mod_shapes">形状认知</span>
+        <button class="lang-toggle" onclick="app.toggleLang()"><span id="lang-label-shp">EN</span></button>
+      </div>
+      <div class="shape-display">
+        <div class="big-shape" id="big-shape"></div>
+        <div class="shape-name" id="shape-name">圆形 / Circle</div>
+      </div>
+      <div class="shape-grid" id="shape-grid"></div>
+    </div>
+
+    <!-- Quiz -->
+    <div id="quiz-screen" class="screen">
+      <div class="top-bar">
+        <button class="btn-back" onclick="app.go('home')">←</button>
+        <span class="screen-title" data-i18n="mod_quiz">趣味问答</span>
+        <button class="lang-toggle" onclick="app.toggleLang()"><span id="lang-label-qz">EN</span></button>
+      </div>
+      <div class="quiz-area" id="quiz-area">
+        <div class="quiz-score">⭐ <span id="quiz-score">0</span></div>
+        <div class="quiz-question" id="quiz-question"></div>
+        <div class="quiz-emoji-hint" id="quiz-emoji"></div>
+        <div class="quiz-options" id="quiz-options"></div>
+        <div class="quiz-feedback hidden" id="quiz-feedback"></div>
+      </div>
+      <div class="quiz-complete hidden" id="quiz-complete">
+        <div class="complete-emoji">🎉</div>
+        <h2 data-i18n="well_done">太棒了！</h2>
+        <p id="quiz-result-text"></p>
+        <button class="btn-game" onclick="app.startQuiz()" data-i18n="play_again">再玩一次</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/data.js"></script>
+  <script src="js/i18n.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
