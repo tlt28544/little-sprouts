@@ -52,6 +52,10 @@
           <span class="module-icon">🔷</span>
           <span class="module-name" data-i18n="mod_shapes">形状认知</span>
         </button>
+        <button class="module-card" onclick="app.go('stories')">
+          <span class="module-icon">📖</span>
+          <span class="module-name" data-i18n="mod_stories">绘本故事</span>
+        </button>
         <button class="module-card" onclick="app.go('quiz')">
           <span class="module-icon">⭐</span>
           <span class="module-name" data-i18n="mod_quiz">趣味问答</span>
@@ -168,6 +172,29 @@
         <div class="shape-name" id="shape-name">圆形 / Circle</div>
       </div>
       <div class="shape-grid" id="shape-grid"></div>
+    </div>
+
+    <!-- Storybook -->
+    <div id="stories-screen" class="screen">
+      <div class="top-bar">
+        <button class="btn-back" onclick="app.go('home')">←</button>
+        <span class="screen-title" data-i18n="mod_stories">绘本故事</span>
+        <button class="lang-toggle" onclick="app.toggleLang()"><span id="lang-label-story">EN</span></button>
+      </div>
+      <div class="story-list" id="story-list"></div>
+      <div class="story-reader hidden" id="story-reader">
+        <div class="story-page" id="story-page">
+          <div class="story-illustration" id="story-illustration"></div>
+          <div class="story-text" id="story-text"></div>
+          <div class="story-speaker" id="story-speaker"></div>
+        </div>
+        <div class="story-nav">
+          <button class="btn-nav" id="story-prev" onclick="app.storyPrev()">◀</button>
+          <span id="story-progress">1 / 6</span>
+          <button class="btn-nav" id="story-next" onclick="app.storyNext()">▶</button>
+        </div>
+        <button class="btn-game story-back-btn" onclick="app.closeStory()" data-i18n="back_to_list">返回书架</button>
+      </div>
     </div>
 
     <!-- Quiz -->

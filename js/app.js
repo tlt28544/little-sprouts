@@ -12,6 +12,8 @@ const app = {
   quizQuestions: [],
   quizIndex: 0,
   currentNumber: 1,
+  currentStoryIndex: 0,
+  currentStoryPage: 0,
 
   enter() {
     this.go('home');
@@ -28,6 +30,7 @@ const app = {
     if (screen === 'colors') this.initColors();
     if (screen === 'animals') this.initAnimals();
     if (screen === 'shapes') this.initShapes();
+    if (screen === 'stories') this.initStories();
     if (screen === 'quiz') this.startQuiz();
     if (screen === 'home') applyI18N();
   },
@@ -389,5 +392,74 @@ const app = {
     document.getElementById('quiz-complete').classList.remove('hidden');
     document.getElementById('quiz-result-text').textContent =
       t('score_msg', { correct: this.quizScore, total: this.quizTotal });
+  },
+
+  // ---- Storybook ----
+  initStories() {
+    document.getElementById('story-reader').classList.add('hidden');
+    document.getElementById('story-list').classList.remove('hidden');
+    const list = document.getElementById('story-list');
+    list.innerHTML = '';
+    STORY_DATA.forEach((story, i) => {
+      const card = document.createElement('button');
+      card.className = 'story-card';
+      card.style.background = story.coverBg;
+      card.innerHTML = `
+        <div class="story-cover-emoji">${story.cover}</div>
+        <div class="story-title">${currentLang === 'zh' ? story.title_zh : story.title_en}</div>
+        <div class="story-pages-info">${story.pages.length} <span data-i18n="pages">页</span></div>
+      `;
+      card.onclick = () => this.openStory(i);
+      list.appendChild(card);
+    });
+    applyI18N();
+  },
+
+  openStory(index) {
+    this.currentStoryIndex = index;
+    this.currentStoryPage = 0;
+    document.getElementById('story-list').classList.add('hidden');
+    document.getElementById('story-reader').classList.remove('hidden');
+    this.renderStoryPage();
+  },
+
+  renderStoryPage() {
+    const story = STORY_DATA[this.currentStoryIndex];
+    const page = story.pages[this.currentStoryPage];
+    const container = document.getElementById('story-page');
+    container.style.background = page.bg;
+    container.style.animation = 'none';
+    container.offsetHeight; // reflow
+    container.style.animation = 'fadeIn 0.5s ease';
+
+    document.getElementById('story-illustration').textContent = page.scene;
+    document.getElementById('story-text').textContent =
+      currentLang === 'zh' ? page.text_zh : page.text_en;
+    document.getElementById('story-speaker').textContent =
+      currentLang === 'zh' ? `—— ${page.speaker_zh}` : `— ${page.speaker_en}`;
+    document.getElementById('story-progress').textContent =
+      `${this.currentStoryPage + 1} / ${story.pages.length}`;
+
+    document.getElementById('story-prev').disabled = this.currentStoryPage === 0;
+    document.getElementById('story-next').disabled = this.currentStoryPage === story.pages.length - 1;
+  },
+
+  storyNext() {
+    const story = STORY_DATA[this.currentStoryIndex];
+    if (this.currentStoryPage < story.pages.length - 1) {
+      this.currentStoryPage++;
+      this.renderStoryPage();
+    }
+  },
+
+  storyPrev() {
+    if (this.currentStoryPage > 0) {
+      this.currentStoryPage--;
+      this.renderStoryPage();
+    }
+  },
+
+  closeStory() {
+    this.initStories();
   },
 };
