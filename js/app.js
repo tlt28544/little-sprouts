@@ -14,6 +14,10 @@ const app = {
   currentNumber: 1,
   currentStoryIndex: 0,
   currentStoryPage: 0,
+  abBookIndex: 0,
+  abPageIndex: 0,
+  abPlaying: false,
+  ttsUtterance: null,
 
   enter() {
     this.go('home');
@@ -31,6 +35,7 @@ const app = {
     if (screen === 'animals') this.initAnimals();
     if (screen === 'shapes') this.initShapes();
     if (screen === 'stories') this.initStories();
+    if (screen === 'audiobook') this.initAudiobook();
     if (screen === 'quiz') this.startQuiz();
     if (screen === 'home') applyI18N();
   },
@@ -429,10 +434,18 @@ const app = {
     const container = document.getElementById('story-page');
     container.style.background = page.bg;
     container.style.animation = 'none';
-    container.offsetHeight; // reflow
+    container.offsetHeight;
     container.style.animation = 'fadeIn 0.5s ease';
 
-    document.getElementById('story-illustration').textContent = page.scene;
+    // Use SVG illustration if available
+    const sceneKey = (STORY_SCENES[story.id] || [])[this.currentStoryPage];
+    const illustEl = document.getElementById('story-illustration');
+    if (sceneKey && SCENE[sceneKey]) {
+      illustEl.innerHTML = SCENE[sceneKey]();
+    } else {
+      illustEl.textContent = page.scene;
+    }
+
     document.getElementById('story-text').textContent =
       currentLang === 'zh' ? page.text_zh : page.text_en;
     document.getElementById('story-speaker').textContent =
@@ -442,6 +455,8 @@ const app = {
 
     document.getElementById('story-prev').disabled = this.currentStoryPage === 0;
     document.getElementById('story-next').disabled = this.currentStoryPage === story.pages.length - 1;
+
+    this.stopTTS();
   },
 
   storyNext() {
@@ -460,6 +475,169 @@ const app = {
   },
 
   closeStory() {
+    this.stopTTS();
     this.initStories();
+  },
+
+  // ---- TTS (Web Speech API) ----
+  toggleTTS() {
+    if (window.speechSynthesis.speaking) {
+      this.stopTTS();
+      return;
+    }
+    const story = STORY_DATA[this.currentStoryIndex];
+    const page = story.pages[this.currentStoryPage];
+    const text = currentLang === 'zh' ? page.text_zh : page.text_en;
+    const speaker = currentLang === 'zh' ? page.speaker_zh : page.speaker_en;
+
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.lang = currentLang === 'zh' ? 'zh-CN' : 'en-US';
+    utter.rate = 0.85;
+    utter.pitch = 1.1;
+
+    // Try to pick a suitable voice
+    const voices = window.speechSynthesis.getVoices();
+    const preferred = voices.find(v => v.lang.startsWith(currentLang === 'zh' ? 'zh' : 'en') && v.name.toLowerCase().includes('female'));
+    if (preferred) utter.voice = preferred;
+
+    document.getElementById('btn-tts-play').innerHTML = '⏸️ <span data-i18n="stop">停止</span>';
+    document.getElementById('btn-tts-stop').disabled = false;
+
+    utter.onend = () => {
+      document.getElementById('btn-tts-play').innerHTML = '🔊 <span data-i18n="listen">朗读</span>';
+      document.getElementById('btn-tts-stop').disabled = true;
+    };
+    utter.onerror = () => {
+      document.getElementById('btn-tts-play').innerHTML = '🔊 <span data-i18n="listen">朗读</span>';
+      document.getElementById('btn-tts-stop').disabled = true;
+    };
+
+    window.speechSynthesis.speak(utter);
+    this.ttsUtterance = utter;
+  },
+
+  stopTTS() {
+    window.speechSynthesis.cancel();
+    const btn = document.getElementById('btn-tts-play');
+    if (btn) btn.innerHTML = '🔊 <span data-i18n="listen">朗读</span>';
+    const stopBtn = document.getElementById('btn-tts-stop');
+    if (stopBtn) stopBtn.disabled = true;
+  },
+
+  // ---- Audiobook ----
+  initAudiobook() {
+    this.abBookIndex = 0;
+    this.abPageIndex = 0;
+    this.abPlaying = false;
+    window.speechSynthesis.cancel();
+
+    const select = document.getElementById('ab-book-select');
+    select.innerHTML = '';
+    STORY_DATA.forEach((story, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'ab-book-btn' + (i === 0 ? ' active' : '');
+      btn.textContent = currentLang === 'zh' ? story.title_zh : story.title_en;
+      btn.onclick = () => this.selectBook(i);
+      select.appendChild(btn);
+    });
+    this.renderAudiobook();
+  },
+
+  selectBook(index) {
+    this.abBookIndex = index;
+    this.abPageIndex = 0;
+    window.speechSynthesis.cancel();
+    this.abPlaying = false;
+    document.querySelectorAll('.ab-book-btn').forEach((b, i) => b.classList.toggle('active', i === index));
+    document.getElementById('ab-play').textContent = '▶️';
+    this.renderAudiobook();
+  },
+
+  renderAudiobook() {
+    const story = STORY_DATA[this.abBookIndex];
+    const page = story.pages[this.abPageIndex];
+
+    document.getElementById('ab-cover').textContent = story.cover;
+    document.getElementById('ab-title').textContent = currentLang === 'zh' ? story.title_zh : story.title_en;
+    document.getElementById('ab-page-info').textContent = `${this.abPageIndex + 1} / ${story.pages.length}`;
+    document.getElementById('ab-text-content').textContent = currentLang === 'zh' ? page.text_zh : page.text_en;
+    document.getElementById('ab-text-content').style.animation = 'none';
+    document.getElementById('ab-text-content').offsetHeight;
+    document.getElementById('ab-text-content').style.animation = 'fadeIn 0.5s ease';
+
+    // Progress bar
+    const pct = ((this.abPageIndex) / (story.pages.length - 1)) * 100;
+    document.getElementById('ab-progress-fill').style.width = pct + '%';
+  },
+
+  abTogglePlay() {
+    if (window.speechSynthesis.speaking) {
+      window.speechSynthesis.cancel();
+      this.abPlaying = false;
+      document.getElementById('ab-play').textContent = '▶️';
+      return;
+    }
+    this.abPlaying = true;
+    document.getElementById('ab-play').textContent = '⏸️';
+    this._abReadPage();
+  },
+
+  _abReadPage() {
+    if (!this.abPlaying) return;
+    const story = STORY_DATA[this.abBookIndex];
+    if (this.abPageIndex >= story.pages.length) {
+      this.abPlaying = false;
+      document.getElementById('ab-play').textContent = '▶️';
+      return;
+    }
+
+    this.renderAudiobook();
+    const page = story.pages[this.abPageIndex];
+    const text = currentLang === 'zh' ? page.text_zh : page.text_en;
+
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.lang = currentLang === 'zh' ? 'zh-CN' : 'en-US';
+    utter.rate = 0.8;
+    utter.pitch = 1.15;
+
+    const voices = window.speechSynthesis.getVoices();
+    const preferred = voices.find(v => v.lang.startsWith(currentLang === 'zh' ? 'zh' : 'en') && v.name.toLowerCase().includes('female'));
+    if (preferred) utter.voice = preferred;
+
+    utter.onend = () => {
+      if (!this.abPlaying) return;
+      this.abPageIndex++;
+      if (this.abPageIndex < story.pages.length) {
+        setTimeout(() => this._abReadPage(), 800);
+      } else {
+        this.abPlaying = false;
+        document.getElementById('ab-play').textContent = '▶️';
+      }
+    };
+    utter.onerror = () => {
+      this.abPlaying = false;
+      document.getElementById('ab-play').textContent = '▶️';
+    };
+
+    window.speechSynthesis.speak(utter);
+  },
+
+  abNext() {
+    const story = STORY_DATA[this.abBookIndex];
+    if (this.abPageIndex < story.pages.length - 1) {
+      window.speechSynthesis.cancel();
+      this.abPageIndex++;
+      this.renderAudiobook();
+      if (this.abPlaying) this._abReadPage();
+    }
+  },
+
+  abPrev() {
+    if (this.abPageIndex > 0) {
+      window.speechSynthesis.cancel();
+      this.abPageIndex--;
+      this.renderAudiobook();
+      if (this.abPlaying) this._abReadPage();
+    }
   },
 };

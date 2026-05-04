@@ -56,6 +56,10 @@
           <span class="module-icon">📖</span>
           <span class="module-name" data-i18n="mod_stories">绘本故事</span>
         </button>
+        <button class="module-card" onclick="app.go('audiobook')">
+          <span class="module-icon">🎧</span>
+          <span class="module-name" data-i18n="mod_audiobook">有声书</span>
+        </button>
         <button class="module-card" onclick="app.go('quiz')">
           <span class="module-icon">⭐</span>
           <span class="module-name" data-i18n="mod_quiz">趣味问答</span>
@@ -188,6 +192,10 @@
           <div class="story-text" id="story-text"></div>
           <div class="story-speaker" id="story-speaker"></div>
         </div>
+        <div class="story-controls">
+          <button class="btn-tts" id="btn-tts-play" onclick="app.toggleTTS()">🔊 <span data-i18n="listen">朗读</span></button>
+          <button class="btn-tts btn-tts-stop" id="btn-tts-stop" onclick="app.stopTTS()" disabled>⏹ <span data-i18n="stop">停止</span></button>
+        </div>
         <div class="story-nav">
           <button class="btn-nav" id="story-prev" onclick="app.storyPrev()">◀</button>
           <span id="story-progress">1 / 6</span>
@@ -195,6 +203,33 @@
         </div>
         <button class="btn-game story-back-btn" onclick="app.closeStory()" data-i18n="back_to_list">返回书架</button>
       </div>
+    </div>
+
+    <!-- Audiobook -->
+    <div id="audiobook-screen" class="screen">
+      <div class="top-bar">
+        <button class="btn-back" onclick="app.go('home')">←</button>
+        <span class="screen-title" data-i18n="mod_audiobook">有声书</span>
+        <button class="lang-toggle" onclick="app.toggleLang()"><span id="lang-label-ab">EN</span></button>
+      </div>
+      <div class="audiobook-info" id="audiobook-info">
+        <div class="ab-cover" id="ab-cover">🐻</div>
+        <div class="ab-title" id="ab-title"></div>
+        <div class="ab-author" data-i18n="pipi_series">皮皮熊系列</div>
+      </div>
+      <div class="audiobook-controls">
+        <button class="btn-ab" id="ab-prev" onclick="app.abPrev()">⏮</button>
+        <button class="btn-ab btn-ab-play" id="ab-play" onclick="app.abTogglePlay()">▶️</button>
+        <button class="btn-ab" id="ab-next" onclick="app.abNext()">⏭</button>
+      </div>
+      <div class="ab-progress-bar">
+        <div class="ab-progress-fill" id="ab-progress-fill"></div>
+      </div>
+      <div class="ab-page-info" id="ab-page-info">1 / 6</div>
+      <div class="ab-text-display" id="ab-text-display">
+        <div class="ab-text-content" id="ab-text-content"></div>
+      </div>
+      <div class="ab-book-select" id="ab-book-select"></div>
     </div>
 
     <!-- Quiz -->
